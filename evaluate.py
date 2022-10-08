@@ -10,7 +10,7 @@ Link to the paper: https://arxiv.org/abs/2002.04155
 
 import numpy as np
 import torch
-from dataHelpers import format_input
+from datasetHelper import format_input
 from calculateError import calculate_error
 
 def evaluate(fcstnet, test_x, test_y, return_lists=False):
@@ -63,7 +63,7 @@ def evaluate(fcstnet, test_x, test_y, return_lists=False):
         smape_list = []
         nrmse_list = []
         for i in range(n_samples):
-            mase, se, smape, nrmse = calculate_error(y_pred[:, i, :].cpu().numpy(), test_y[:, i, :].cpu().numpy())
+            mase, se, smape, nrmse = calculate_error(y_pred[:, i, :].cpu().numpy(), test_y[i, :, :].cpu().numpy())
             mase_list.append(mase)
             smape_list.append(smape)
             nrmse_list.append(nrmse)

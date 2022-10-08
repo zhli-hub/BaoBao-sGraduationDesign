@@ -10,7 +10,7 @@ Link to the paper: https://arxiv.org/abs/2002.04155
 import numpy as np
 import torch
 import time
-from dataHelpers import format_input
+from datasetHelper import format_input
 from gaussian import gaussian_loss, mse_loss
 import torch.nn.functional as F
 
@@ -93,7 +93,7 @@ def train(fcstnet, train_x, train_y, validation_x=None, validation_y=None, resto
         for sample in permutation:
             # Extract a sample at the current permuted index
             input = train_x[sample:sample + fcstnet.batch_size, :]
-            target = train_y[:, sample:sample + fcstnet.batch_size, :]
+            target = train_y[sample:sample + fcstnet.batch_size, :, :]
 
             # Send input and output data to the GPU/CPU
             input = input.to(fcstnet.device)
@@ -111,14 +111,15 @@ def train(fcstnet, train_x, train_y, validation_x=None, validation_y=None, resto
             elif fcstnet.model_type == 'dense2' or fcstnet.model_type == 'conv2':
                 # Calculate the outputs
                 outputs = fcstnet.model(input, target, is_training=True)
-                loss = F.mse_loss(input=outputs, target=target)
+
+                loss = F.mse_loss(input=outputs, target=target.permute(1,0,2))
             batch_cost.append(loss.item())
             # Calculate the derivatives
             loss.backward()
             # Update the model parameters
             fcstnet.optimizer.step()
 
-            if count % 50 == 0:
+            if count % 1 == 0:
                 print("Average cost after training batch %i of %i: %f" % (count, permutation.shape[0], loss.item()))
             count += 1
         # Find average cost over sequences and batches
@@ -149,7 +150,7 @@ def train(fcstnet, train_x, train_y, validation_x=None, validation_y=None, resto
                     # Calculate the outputs
                     y_valid = fcstnet.model(validation_x, validation_y, is_training=False)
                     # Calculate the loss
-                    loss = F.mse_loss(input=y_valid, target=validation_y)
+                    loss = F.mse_loss(input=y_valid, target=validation_y.permute(1,0,2))
                 validation_costs.append(loss.item())
             fcstnet.model.train()
 

@@ -13,7 +13,7 @@ import torch
 
 from denseForecastNet import ForecastNetDenseModel, ForecastNetDenseModel2
 from convForecastNet import ForecastNetConvModel, ForecastNetConvModel2
-from dataHelpers import format_input
+from datasetHelper import format_input
 
 class forecastNet:
     """

@@ -13,24 +13,26 @@ import matplotlib.pyplot as plt
 from forecastNet import forecastNet
 from train import train
 from evaluate import evaluate
-from dataHelpers import generate_data
+#from dataHelpers import generate_data
+from datasetHelper import generate_data
 
 #Use a fixed seed for repreducible results
 np.random.seed(1)
 
 # Generate the dataset
-train_x, train_y, test_x, test_y, valid_x, valid_y, period = generate_data(T=2750, period = 50, n_seqs = 4)
+#train_x, train_y, test_x, test_y, valid_x, valid_y, period = generate_data(T=2750, period = 50, n_seqs = 4)
 # train_data, test_data, valid_data, period = generate_data(T=1000, period = 10)
-
+PERIOD = 5
+train_x, train_y, valid_x, valid_y, test_x, test_y = generate_data(period = PERIOD)
 # Model parameters
 model_type = 'dense2' #'dense' or 'conv', 'dense2' or 'conv2'
-in_seq_length = 2 * period
-out_seq_length = period
+in_seq_length = 2 * PERIOD
+out_seq_length = PERIOD
 hidden_dim = 24
-input_dim = 1
-output_dim = 1
+input_dim = 32 * 32 * 3
+output_dim = 32 * 32 * 3
 learning_rate = 0.0001
-n_epochs= 1
+n_epochs = 100
 batch_size = 16
 
 # Initialise model
@@ -53,7 +55,7 @@ print('SMAPE:', smape)
 print('NRMSE:', nrmse)
 
 # Generate and plot forecasts for various samples from the test dataset
-samples = [0, 500, 1039]
+samples = [0, 3, 7]
 # Models with a Gaussian Mixture Density Component output
 if model_type == 'dense' or model_type == 'conv':
     # Generate a set of n_samples forecasts (Monte Carlo Forecasts)
@@ -83,16 +85,16 @@ if model_type == 'dense' or model_type == 'conv':
 # Models with a linear output
 elif model_type == 'dense2' or model_type == 'conv2':
     # Generate a forecast
-    y_pred = fcstnet.forecast(test_x[:,samples,:])
+    y_pred = fcstnet.forecast(test_x[samples,:,:])
 
     for i in range(len(samples)):
         # Plot the forecast
         plt.figure()
         plt.plot(np.arange(0, fcstnet.in_seq_length),
-                 test_x[:, samples[i], 0],
+                 test_x[samples[i], :, 0],
                  'o-', label='test_data')
         plt.plot(np.arange(fcstnet.in_seq_length, fcstnet.in_seq_length + fcstnet.out_seq_length),
-                 test_y[:, samples[i], 0],
+                 test_y[samples[i], :, 0],
                  'o-')
         plt.plot(np.arange(fcstnet.in_seq_length, fcstnet.in_seq_length + fcstnet.out_seq_length),
                  y_pred[:, i, 0],

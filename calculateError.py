@@ -38,7 +38,7 @@ def calculate_error(Yhat, Y, print_errors=False):
         Y = np.expand_dims(Y, axis=1)
         Yhat = np.expand_dims(Yhat, axis=1)
     elif np.ndim(Y) == 2:
-        n_sequences = Y.shape[1]
+        n_sequences = Y.shape[0]
     elif np.ndim(Y) == 3 and Y.shape[2] == 1:
         assert Y.shape[2] == 1, 'For a three dimensional array, Y.shape[2] == 1'
         Y = np.squeeze(Y, axis=2)
@@ -55,8 +55,8 @@ def calculate_error(Yhat, Y, print_errors=False):
     smape = []
     for i in range(n_sequences):
         # Compute numerator and denominator
-        numerator = np.absolute(Y[:, i] - Yhat[:, i])
-        denominator = (np.absolute(Y[:, i]) + np.absolute(Yhat[:, i]))
+        numerator = np.absolute(Y[i, :] - Yhat[i, :])
+        denominator = (np.absolute(Y[i, :]) + np.absolute(Yhat[i, :]))
         # Remove any elements with zeros in the denominator
         non_zeros = denominator != 0
         numerator = numerator[non_zeros]
@@ -73,8 +73,10 @@ def calculate_error(Yhat, Y, print_errors=False):
     se = []
     mase = []
     for i in range(n_sequences):
-        numerator = (Y[:, i] - Yhat[:, i])
-        denominator = np.sum(np.absolute(Y[1:, i] - Y[0:-1, i]), axis=0)
+        numerator = (Y[i, :] - Yhat[i, :])
+        tmp1 = Y[i, 1:]
+        tmp2 = Y[i, 0:-1]
+        denominator = np.sum(np.absolute(Y[i, 1:] - Y[i, 0:-1]), axis=0)
         # Check if denominator is zero
         if denominator == 0:
             warnings.warn("The denominator for the MASE is zero")
@@ -96,8 +98,8 @@ def calculate_error(Yhat, Y, print_errors=False):
     nrmse = []
     for i in range(n_sequences):
         # Compute numerator and denominator
-        numerator = 100 * np.sqrt(np.mean(np.square(Y[:, i] - Yhat[:, i])))
-        denominator = np.max(Y[:, i]) - np.min(Y[:, i])
+        numerator = 100 * np.sqrt(np.mean(np.square(Y[i, :] - Yhat[i, :])))
+        denominator = np.max(Y[i, :]) - np.min(Y[i, :])
         # Remove any elements with zeros in the denominator
         non_zeros = denominator != 0
         numerator = numerator[non_zeros]

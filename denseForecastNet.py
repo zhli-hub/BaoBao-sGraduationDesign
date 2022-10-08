@@ -133,7 +133,7 @@ class ForecastNetDenseModel2(nn.Module):
             outputs[i,:,:] = output
             # Prepare the next input
             if is_training:
-                next_cell_input = torch.cat((input, hidden, target[i, :, :]), dim=1)
+                next_cell_input = torch.cat((input, hidden, target[:, i, :]), dim=1)
             else:
                 next_cell_input = torch.cat((input, hidden, outputs[i, :, :]), dim=1)
         return outputs
